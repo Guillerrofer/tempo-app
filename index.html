@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="Tu registro personal de tiempo">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>Tempo — Registro de tiempo</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div><div class="eyebrow">TU TIEMPO, BAJO CONTROL</div><h1>Simple Clock<span>.</span></h1></div>
+      <button id="themeBtn" class="icon-btn" aria-label="Cambiar tema">◐</button>
+    </header>
+
+    <main>
+      <section id="timerView" class="view active">
+        <div class="section-head"><div><p class="eyebrow">CRONÓMETRO</p><h2>Concéntrate en lo importante.</h2></div></div>
+        <div class="mode-switch">
+          <button class="mode-btn selected" data-mode="sport">Deportivo</button>
+          <button class="mode-btn" data-mode="retro">Retro flip</button>
+        </div>
+        <div id="timerFace" class="timer-face sport">
+          <div class="timer-ring"><div class="timer-digits" id="timerDigits" aria-live="off">00:00:00</div><div class="timer-caption" id="timerCaption">HORAS · MINUTOS · SEGUNDOS</div></div>
+        </div>
+        <button id="fullscreenBtn" class="secondary-btn fullscreen-btn" aria-label="Abrir temporizador a pantalla completa">⛶ Pantalla completa</button>
+        <div class="timer-state" id="timerState">LISTO PARA EMPEZAR</div>
+        <label class="field-label" for="activeTag">ETIQUETA</label>
+        <select id="activeTag" class="control"></select>
+        <div class="timer-actions">
+          <button id="startBtn" class="primary-btn">Iniciar</button>
+          <button id="pauseBtn" class="secondary-btn" disabled>Pausar</button>
+          <button id="saveBtn" class="secondary-btn" disabled>Finalizar y guardar</button>
+        </div>
+        <p class="microcopy">El tiempo se conserva aunque cierres la aplicación o bloquees el móvil.</p>
+      </section>
+
+      <section id="recordsView" class="view">
+        <div class="section-head"><div><p class="eyebrow">HISTORIAL</p><h2>Tus registros</h2></div><button id="addManualBtn" class="small-btn">＋ Añadir</button></div>
+        <div class="filters"><select id="recordTagFilter" class="control"><option value="">Todas las etiquetas</option></select></div>
+        <div id="recordsList" class="stack"></div>
+      </section>
+
+      <section id="statsView" class="view">
+        <div class="section-head"><div><p class="eyebrow">ANÁLISIS</p><h2>Tu tiempo en perspectiva</h2></div></div>
+        <div class="period-switch">
+          <button class="period-btn selected" data-period="day">Día</button>
+          <button class="period-btn" data-period="month">Mes</button>
+          <button class="period-btn" data-period="quarter">Trimestre</button>
+          <button class="period-btn" data-period="year">Año</button>
+        </div>
+        <div class="panel total-panel"><div class="eyebrow">TIEMPO REGISTRADO</div><div id="totalTime" class="total-time">0 h 00 min</div><div id="periodLabel" class="muted"></div></div>
+        <div class="panel"><h3>Distribución por etiqueta</h3><div id="tagStats" class="stack"></div></div>
+      </section>
+
+      <section id="goalsView" class="view">
+        <div class="section-head"><div><p class="eyebrow">CONSTANCIA</p><h2>Objetivos</h2></div><button id="addGoalBtn" class="small-btn">＋ Meta</button></div>
+        <div id="goalsList" class="stack"></div>
+      </section>
+
+      <section id="settingsView" class="view">
+        <div class="section-head"><div><p class="eyebrow">PERSONALIZACIÓN</p><h2>Configuración</h2></div></div>
+        <div class="panel stack">
+          <h3>Etiquetas</h3>
+          <div id="tagsList" class="stack"></div>
+          <div class="inline-form"><input id="newTagName" class="control" placeholder="Nueva etiqueta"><input id="newTagColor" type="color" value="#8b7cf6"><button id="addTagBtn" class="small-btn">Añadir</button></div>
+        </div>
+        <div class="panel stack">
+          <h3>Datos y copias de seguridad</h3>
+          <p class="muted">Tus registros se guardan localmente en este dispositivo.</p>
+          <div class="button-row"><button id="exportBtn" class="secondary-btn">Exportar JSON</button><label class="secondary-btn file-label">Importar JSON<input id="importFile" type="file" accept="application/json"></label></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegación principal">
+      <button class="nav-btn active" data-view="timerView"><span>◷</span>Tiempo</button>
+      <button class="nav-btn" data-view="recordsView"><span>▤</span>Registros</button>
+      <button class="nav-btn" data-view="statsView"><span>◔</span>Estadísticas</button>
+      <button class="nav-btn" data-view="goalsView"><span>◎</span>Metas</button>
+      <button class="nav-btn" data-view="settingsView"><span>⚙</span>Ajustes</button>
+    </nav>
+  </div>
+
+  <dialog id="recordDialog" class="dialog">
+    <form method="dialog" id="recordForm">
+      <div class="dialog-head"><h2>Guardar registro</h2><button class="icon-btn" value="cancel" aria-label="Cerrar">×</button></div>
+      <label class="field-label">Etiqueta</label><select id="saveTag" class="control"></select>
+      <label class="field-label">Nota (opcional)</label><input id="saveNote" class="control" placeholder="¿Qué has hecho?">
+      <div id="saveDuration" class="muted"></div>
+      <div class="dialog-actions"><button class="secondary-btn" value="cancel">Cancelar</button><button id="confirmSave" class="primary-btn" value="default">Guardar</button></div>
+    </form>
+  </dialog>
+  <dialog id="manualDialog" class="dialog">
+    <form method="dialog" id="manualForm">
+      <div class="dialog-head"><h2>Añadir registro</h2><button class="icon-btn" value="cancel">×</button></div>
+      <label class="field-label">Etiqueta</label><select id="manualTag" class="control"></select>
+      <label class="field-label">Duración en minutos</label><input id="manualMinutes" class="control" type="number" min="1" required placeholder="60">
+      <label class="field-label">Fecha y hora de inicio</label><input id="manualStart" class="control" type="datetime-local" required>
+      <label class="field-label">Nota</label><input id="manualNote" class="control" placeholder="Opcional">
+      <div class="dialog-actions"><button class="secondary-btn" value="cancel">Cancelar</button><button id="confirmManual" class="primary-btn" value="default">Guardar</button></div>
+    </form>
+  </dialog>
+  <dialog id="goalDialog" class="dialog">
+    <form method="dialog" id="goalForm">
+      <div class="dialog-head"><h2>Nueva meta</h2><button class="icon-btn" type="button" id="closeGoalDialog" aria-label="Cerrar">×</button></div>
+      <label class="field-label">Nombre</label><input id="goalName" class="control" required placeholder="Ej. Estudiar cada día">
+      <label class="field-label">Tipo</label><select id="goalType" class="control"><option value="daily">Diaria</option><option value="monthly">Mensual</option></select>
+      <label class="field-label">Tiempo objetivo</label><div class="goal-time-fields"><label><span class="muted">Horas</span><input id="goalHours" class="control" type="number" min="0" step="1" value="0" inputmode="numeric"></label><label><span class="muted">Minutos</span><input id="goalMinutes" class="control" type="number" min="0" max="59" step="1" value="0" inputmode="numeric"></label></div>
+      <label class="field-label">Etiqueta (opcional)</label><select id="goalTag" class="control"></select>
+      <div class="dialog-actions"><button class="secondary-btn" type="button" id="cancelGoal">Cancelar</button><button id="confirmGoal" class="primary-btn" value="default">Crear meta</button></div>
+    </form>
+  </dialog>
+  <script src="database.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
