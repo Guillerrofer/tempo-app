@@ -49,6 +49,7 @@
         <div class="section-head"><div><p class="eyebrow">ANÁLISIS</p><h2>Tu tiempo en perspectiva</h2></div></div>
         <div class="period-switch">
           <button class="period-btn selected" data-period="day">Día</button>
+          <button class="period-btn" data-period="week">Semana</button>
           <button class="period-btn" data-period="month">Mes</button>
           <button class="period-btn" data-period="quarter">Trimestre</button>
           <button class="period-btn" data-period="year">Año</button>
@@ -107,9 +108,9 @@
   </dialog>
   <dialog id="goalDialog" class="dialog">
     <form method="dialog" id="goalForm">
-      <div class="dialog-head"><h2>Nueva meta</h2><button class="icon-btn" type="button" id="closeGoalDialog" aria-label="Cerrar">×</button></div>
+      <div class="dialog-head"><h2 id="goalDialogTitle">Nueva meta</h2><button class="icon-btn" type="button" id="closeGoalDialog" aria-label="Cerrar">×</button></div>
       <label class="field-label">Nombre</label><input id="goalName" class="control" required placeholder="Ej. Estudiar cada día">
-      <label class="field-label">Tipo</label><select id="goalType" class="control"><option value="daily">Diaria</option><option value="monthly">Mensual</option></select>
+      <label class="field-label">Tipo</label><select id="goalType" class="control"><option value="daily">Diaria</option><option value="weekly">Semanal</option><option value="monthly">Mensual</option></select>
       <label class="field-label">Tiempo objetivo</label><div class="goal-time-fields"><label><span class="muted">Horas</span><input id="goalHours" class="control" type="number" min="0" step="1" value="0" inputmode="numeric"></label><label><span class="muted">Minutos</span><input id="goalMinutes" class="control" type="number" min="0" max="59" step="1" value="0" inputmode="numeric"></label></div>
       <label class="field-label">Etiqueta (opcional)</label><select id="goalTag" class="control"></select>
       <div class="dialog-actions"><button class="secondary-btn" type="button" id="cancelGoal">Cancelar</button><button id="confirmGoal" class="primary-btn" value="default">Crear meta</button></div>
