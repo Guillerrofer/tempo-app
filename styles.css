@@ -64,3 +64,12 @@ body.timer-fullscreen #timerView>#fullscreenBtn:hover,body.timer-fullscreen #tim
 body.timer-fullscreen .flip-digit{height:1.28em}
 @media(orientation:landscape){body.timer-fullscreen #timerView>.timer-face.retro .timer-ring{width:min(95vw,1200px);min-height:clamp(140px,55vh,420px)}body.timer-fullscreen #timerView>.timer-face .timer-ring{width:min(84vh,68vw,800px);height:min(84vh,68vw,800px)}}
 .goal-time-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.goal-time-fields label{display:grid;gap:6px}
+
+/* Controles accesibles durante el modo de pantalla completa */
+body.timer-fullscreen #timerView>.timer-state,body.timer-fullscreen #timerView>#activeTag,body.timer-fullscreen #timerView>.timer-actions{display:block;position:fixed;z-index:15;left:50%;transform:translateX(-50%);width:min(92vw,520px)}
+body.timer-fullscreen #timerView>.timer-state{top:calc(env(safe-area-inset-top) + 12px);left:12px;transform:none;width:auto;margin:0}
+body.timer-fullscreen #timerView>#activeTag{bottom:calc(env(safe-area-inset-bottom) + 82px)}
+body.timer-fullscreen #timerView>.timer-actions{display:grid;bottom:calc(env(safe-area-inset-bottom) + 16px);margin:0}
+body.timer-fullscreen #timerView>.timer-actions button{min-height:46px}
+body.timer-fullscreen #timerView>.timer-face{padding-bottom:150px}
+@media(orientation:landscape){body.timer-fullscreen #timerView>.timer-state{top:auto;bottom:calc(env(safe-area-inset-bottom) + 150px);left:auto;right:12px}body.timer-fullscreen #timerView>#activeTag{left:auto;right:12px;transform:none;width:min(34vw,320px)}body.timer-fullscreen #timerView>.timer-actions{left:auto;right:12px;transform:none;width:min(34vw,320px)}body.timer-fullscreen #timerView>.timer-face{padding-bottom:0;padding-right:36vw}}
