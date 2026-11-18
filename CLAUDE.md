@@ -164,7 +164,7 @@ No afirmes que una comprobación se hizo si no se ejecutó realmente.
 - Esta carpeta (`time-tracker-pwa/`) **es la raíz del repositorio**: remoto `origin` = `https://github.com/Guillerrofer/tempo-app.git`, rama `main`.
 - GitHub Pages publica la raíz de `main` en `https://guillerrofer.github.io/tempo-app/`. Un push a `main` se publica en menos de un minuto.
 - Identidad configurada solo en este repositorio: `guillerrofer` / `guillerrofer@users.noreply.github.com` (correo anónimo de GitHub; no uses el correo real del usuario).
-- El usuario ha autorizado que Claude haga commit y push a `main` cuando lo pida ("súbelo"). La autenticación la gestiona Git Credential Manager de Windows. `gh` no está instalado.
+- **Publicación automática:** el usuario quiere que Claude haga commit y push a `main` al terminar cada cambio, sin pedir confirmación, después de comprobarlo (pruebas o capturas) y de subir la versión `CACHE` si hace falta. Excepción: los cambios que puedan borrar o reinterpretar datos (esquema de IndexedDB, formato de sincronización o de exportación, reglas de Firestore) se consultan antes, según la sección 5. La autenticación la gestiona Git Credential Manager de Windows. `gh` no está instalado.
 
 ### Flujo para guardar y publicar cambios
 
