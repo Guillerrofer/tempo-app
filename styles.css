@@ -35,7 +35,7 @@
 
 /* ===== Pantalla completa: solo el reloj, el estado y los controles ===== */
 /* --fs-top y --fs-bottom reservan el espacio de la barra superior y de los controles; el reloj usa el resto (--fs-h). */
-body.timer-fullscreen{overflow:hidden;--fs-top:calc(env(safe-area-inset-top) + 64px);--fs-bottom:calc(env(safe-area-inset-bottom) + 78px);--fs-h:calc(100dvh - var(--fs-top) - var(--fs-bottom))}
+body.timer-fullscreen{overflow:hidden;--fs-top:calc(env(safe-area-inset-top) + 64px);--fs-bottom:calc(env(safe-area-inset-bottom) + 68px);--fs-h:calc(100dvh - var(--fs-top) - var(--fs-bottom))}
 body.timer-fullscreen:has(.timer-face.retro){background:#000}
 body.timer-fullscreen .app-shell{max-width:none;width:100%;height:100dvh;min-height:100dvh;padding:0}
 body.timer-fullscreen .topbar,body.timer-fullscreen .bottom-nav{display:none}
@@ -48,10 +48,11 @@ body.timer-fullscreen #timerView>.timer-face.retro .timer-ring{width:min(96vw,ca
 body.timer-fullscreen .flip-clock{gap:2.5vw}
 /* Botón para salir, arriba a la derecha */
 body.timer-fullscreen #fullscreenBtn{position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:14px;width:46px;height:46px;border-radius:50%;font:400 30px/1 system-ui;opacity:.78;background:#111;color:#fff;border:1px solid #555}
-/* Estado, arriba a la izquierda */
-body.timer-fullscreen #timerView>.timer-state{display:block;position:fixed;z-index:15;top:calc(env(safe-area-inset-top) + 28px);left:16px;margin:0}
-/* Controles abajo: los cuatro botones en una fila */
-body.timer-fullscreen #timerView>.timer-actions{display:grid;position:fixed;z-index:15;left:50%;transform:translateX(-50%);width:min(92vw,640px);margin:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;bottom:calc(env(safe-area-inset-bottom) + 16px)}
-body.timer-fullscreen #timerView>.timer-actions .primary-btn{grid-column:auto}
-body.timer-fullscreen #timerView>.timer-actions button{height:46px;padding:0 8px;line-height:1.15}
-@media(orientation:landscape){body.timer-fullscreen{--fs-top:calc(env(safe-area-inset-top) + 56px)}}
+/* Pantalla completa sin distracciones: solo el reloj, la × y un botón de pausar/reanudar abajo en el centro.
+   El estado y la fila de botones quedan ocultos por la regla #timerView>* de arriba. */
+.fs-toggle{display:none}
+body.timer-fullscreen #timerView>.fs-toggle{display:block;position:fixed;z-index:15;left:50%;bottom:calc(env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);min-width:150px;height:44px;margin:0;padding:0 24px;border-radius:22px;background:#151515;color:#ddd;border:1px solid #3a3a3a;font:800 13px Manrope;opacity:.8}
+body.timer-fullscreen #timerView>.fs-toggle:hover,body.timer-fullscreen #timerView>.fs-toggle:focus-visible{opacity:1}
+@media(orientation:landscape){body.timer-fullscreen{--fs-top:calc(env(safe-area-inset-top) + 40px)}}
+/* Vertical: horas encima de minutos, para que cada tarjeta use todo el ancho */
+@media(orientation:portrait){body.timer-fullscreen #timerView>.timer-face.retro .timer-ring{width:min(92vw,calc((var(--fs-h) - 3vw)/2))}body.timer-fullscreen .flip-clock{grid-template-columns:1fr;gap:3vw}}

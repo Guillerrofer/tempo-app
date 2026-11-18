@@ -3,7 +3,7 @@
    - Recursos externos (Google Fonts): primero la caché.
    - Al instalar se descarga todo saltándose la caché HTTP del navegador (GitHub Pages guarda 10 min), para no precargar archivos viejos.
    Sube CACHE cuando cambie la lista FILES o la lógica de este archivo. */
-const CACHE='tempo-shell-v15';
+const CACHE='tempo-shell-v16';
 const FILES=['./','./index.html','./styles.css','./database.js','./sync.js','./app.js','./manifest.webmanifest','./icons/icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
 const NETWORK_TIMEOUT=4000;
 
