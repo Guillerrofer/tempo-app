@@ -76,7 +76,7 @@ Los datos no se envían a un backend: cada instalación/navegador conserva sus p
 - **`icons/`**: recursos gráficos de instalación.
 - **`CLAUDE.md`**: contexto e instrucciones de mantenimiento; actualizarlo cuando cambien arquitectura o convenciones.
 
-No hay `package.json`, gestor de paquetes, sistema de compilación, suite de tests ni `.gitignore` en esta copia. La carpeta actual tampoco contiene metadatos `.git`; no se puede deducir desde aquí la URL del remoto, rama activa o historial de commits. No inventes esos datos.
+No hay `package.json`, gestor de paquetes, sistema de compilación, suite de tests ni `.gitignore`. Esta carpeta es la raíz del repositorio Git (ver sección 4).
 
 ## 3. Funcionamiento técnico
 
@@ -161,22 +161,23 @@ No afirmes que una comprobación se hizo si no se ejecutó realmente.
 
 ### Organización y estado conocidos
 
-El código de la app está dentro de `time-tracker-pwa/`. Esta carpeta de trabajo no incluye `.git`, por lo que Claude no puede confirmar rama, remoto, historial ni estado de commits. El usuario puede estar editando o subiendo archivos manualmente a GitHub. Antes de dar comandos que dependan del repositorio, comprueba si hay `.git` en la carpeta correcta; si no lo hay, indica que se ejecuten en el clon local del repositorio de GitHub, no en una carpeta suelta.
+- Esta carpeta (`time-tracker-pwa/`) **es la raíz del repositorio**: remoto `origin` = `https://github.com/Guillerrofer/tempo-app.git`, rama `main`.
+- GitHub Pages publica la raíz de `main` en `https://guillerrofer.github.io/tempo-app/`. Un push a `main` se publica en menos de un minuto.
+- Identidad configurada solo en este repositorio: `guillerrofer` / `guillerrofer@users.noreply.github.com` (correo anónimo de GitHub; no uses el correo real del usuario).
+- El usuario ha autorizado que Claude haga commit y push a `main` cuando lo pida ("súbelo"). La autenticación la gestiona Git Credential Manager de Windows. `gh` no está instalado.
 
-### Flujo recomendado para guardar cambios con Git
-
-En un clon que sí contenga `.git`, desde la raíz del repositorio:
+### Flujo para guardar y publicar cambios
 
 ```bash
 git status
 git pull --ff-only
-git add time-tracker-pwa/CLAUDE.md time-tracker-pwa/index.html time-tracker-pwa/app.js time-tracker-pwa/styles.css time-tracker-pwa/service-worker.js
+git add <archivos cambiados>      # nunca `git add -A` sin revisar git status antes
 git diff --cached
 git commit -m "Describe el cambio"
 git push
 ```
 
-Ajusta la lista de `git add` a los archivos que realmente cambiaste. Revisa `git status` y `git diff` antes de confirmar. Si el repositorio está clonado directamente dentro de `time-tracker-pwa`, las rutas de `git add` serán relativas a esa raíz. No hagas `push`, `reset`, `rebase` o cambios de rama sin que el usuario lo pida o el flujo acordado lo autorice.
+Antes de publicar, sube la versión `CACHE` de `service-worker.js` si cambió algún archivo precargado. Después del push, comprueba que `https://guillerrofer.github.io/tempo-app/service-worker.js` sirve la versión nueva. No hagas `push --force`, `reset --hard`, `rebase` ni cambios de rama sin que el usuario lo pida.
 
 ### Recuperar versiones anteriores
 
