@@ -21,21 +21,19 @@
       <section id="timerView" class="view active">
         <div class="section-head"><div><p class="eyebrow">CRONÓMETRO</p><h2>Concéntrate en lo importante.</h2></div></div>
         <div class="mode-switch">
-          <button class="mode-btn selected" data-mode="sport">Deportivo</button>
-          <button class="mode-btn" data-mode="retro">Retro flip</button>
+          <button class="mode-btn" data-mode="sport">Deportivo</button>
+          <button class="mode-btn selected" data-mode="retro">Retro flip</button>
         </div>
-        <div id="timerFace" class="timer-face sport">
-          <div class="timer-ring"><div class="timer-digits" id="timerDigits" aria-live="off">00:00:00</div><div class="timer-caption" id="timerCaption">HORAS · MINUTOS · SEGUNDOS</div></div>
+        <div id="timerFace" class="timer-face retro">
+          <div class="timer-ring"><div class="timer-digits" id="timerDigits" aria-live="off">00:00:00</div><div class="timer-caption" id="timerCaption">HORAS · MINUTOS · SEGUNDOS</div><button id="fullscreenBtn" class="fullscreen-btn" aria-label="Abrir temporizador a pantalla completa" title="Pantalla completa">⛶</button></div>
         </div>
-        <button id="fullscreenBtn" class="secondary-btn fullscreen-btn" aria-label="Abrir temporizador a pantalla completa">⛶ Pantalla completa</button>
-        <div class="timer-state" id="timerState">LISTO PARA EMPEZAR</div>
-        <label class="field-label" for="activeTag">ETIQUETA</label>
-        <select id="activeTag" class="control"></select>
         <div class="timer-actions">
           <button id="startBtn" class="primary-btn">Iniciar</button>
           <button id="pauseBtn" class="secondary-btn" disabled>Pausar</button>
+          <button id="resetBtn" class="secondary-btn" disabled>Reiniciar</button>
           <button id="saveBtn" class="secondary-btn" disabled>Finalizar y guardar</button>
         </div>
+        <div class="timer-state" id="timerState">LISTO PARA EMPEZAR</div>
         <p class="microcopy">El tiempo se conserva aunque cierres la aplicación o bloquees el móvil.</p>
       </section>
 
@@ -69,6 +67,18 @@
           <h3>Etiquetas</h3>
           <div id="tagsList" class="stack"></div>
           <div class="inline-form"><input id="newTagName" class="control" placeholder="Nueva etiqueta"><input id="newTagColor" type="color" value="#8b7cf6"><button id="addTagBtn" class="small-btn">Añadir</button></div>
+        </div>
+        <div class="panel stack" id="syncPanel">
+          <h3>Sincronización entre dispositivos</h3>
+          <div id="syncOff" class="stack">
+            <p class="muted">Escribe la misma frase o código en todos tus dispositivos para compartir etiquetas, registros y metas. Se cifran en el dispositivo con la frase antes de subirse. Si ya hay datos con esa frase, se combinan con los de este dispositivo. Guarda la frase: si la pierdes no se puede recuperar, y quien la tenga puede ver y cambiar tus datos.</p>
+            <input id="syncPhrase" class="control" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Frase o código de sincronización" placeholder="Frase o código (mín. 12 caracteres)">
+            <div class="button-row"><button id="syncGenerate" class="secondary-btn">Generar código</button><button id="syncLink" class="primary-btn">Activar</button></div>
+          </div>
+          <div id="syncOn" class="stack" hidden>
+            <p id="syncStatus" class="muted" aria-live="polite"></p>
+            <div class="button-row"><button id="syncNow" class="secondary-btn">Sincronizar ahora</button><button id="syncUnlink" class="secondary-btn">Desactivar aquí</button></div>
+          </div>
         </div>
         <div class="panel stack">
           <h3>Datos y copias de seguridad</h3>
@@ -117,6 +127,7 @@
     </form>
   </dialog>
   <script src="database.js"></script>
+  <script src="sync.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

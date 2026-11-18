@@ -3,15 +3,18 @@
 Primera versión funcional de una aplicación web instalable para Android.
 
 ## Qué incluye
-- Cronómetro con modo deportivo y modo retro.
+- Cronómetro con modo deportivo y modo retro flip (por defecto).
+- La etiqueta se elige al finalizar y guardar (se recuerda la última usada).
+- Pantalla completa (cuadrado pequeño en la esquina superior derecha del reloj) con controles accesibles; la pantalla no se apaga mientras está abierta (si el navegador lo permite).
 - Reanudación de sesión tras cerrar o bloquear el móvil.
-- Pausar, reanudar y guardar registros.
+- Pausar, reanudar, reiniciar (descartar la sesión sin guardarla) y guardar registros. Las pausas no cuentan en las estadísticas ni en las metas.
 - Etiquetas personalizables.
 - Historial y alta manual de registros.
-- Estadísticas por día, mes, trimestre y año.
-- Objetivos diarios y mensuales, generales o por etiqueta.
-- Exportación e importación de copias JSON.
+- Estadísticas por día, semana (lunes a domingo), mes, trimestre y año.
+- Objetivos diarios, semanales y mensuales, generales o por etiqueta.
+- Exportación e importación de copias JSON. La importación comprueba el archivo antes y, si falla, no modifica tus datos.
 - Almacenamiento local mediante IndexedDB.
+- Sincronización opcional entre dispositivos con una frase o código (Ajustes → Sincronización). Los datos se cifran en el dispositivo antes de subirse a Firebase.
 - PWA con caché básica.
 
 ## Ejecutar en el ordenador
@@ -34,13 +37,12 @@ Para instalarla como PWA, publica la carpeta en un alojamiento HTTPS (por ejempl
 
 ## Importante
 - Los datos se guardan en el almacenamiento del navegador de cada dispositivo.
-- No hay servidor ni sincronización de registros.
+- Sin sincronización activada, no se envía nada a ningún servidor. Con ella, solo se sube texto cifrado con tu frase: guárdala bien, porque sin ella no se pueden recuperar los datos de la nube, y quien la tenga puede verlos y cambiarlos.
+- El cronómetro en marcha, el tema y el modo de reloj son de cada dispositivo y no se sincronizan.
 - Exporta copias de seguridad regularmente.
 - Esta es una primera versión de desarrollo. Antes de usarla para datos importantes, prueba exportación/importación, cambios de fecha, sesiones largas y recuperación tras reiniciar el móvil.
-- El modo retro de esta versión es una aproximación visual flip; la animación de volteo real puede añadirse en una siguiente iteración.
 
 ## Próximas mejoras recomendadas
 1. Editor completo de registros (fecha, hora, duración, etiqueta y nota).
-2. Desglose estadístico robusto de sesiones que cruzan medianoche y límites de periodo.
-3. Alertas de objetivos mediante notificaciones.
-4. Accesibilidad, pruebas y ajustes visuales específicos para Samsung/Android.
+2. Alertas de objetivos mediante notificaciones.
+3. Accesibilidad, pruebas y ajustes visuales específicos para Samsung/Android.
