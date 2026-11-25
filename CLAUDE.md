@@ -17,7 +17,7 @@ Tempo (también aparece como “Simple Clock” en la interfaz) es un cronómetr
 - Modo de pantalla completa (icono pequeño ⛶, solo esquinas, en la esquina superior derecha del reloj) con controles del cronómetro accesibles; al pausar no sale de pantalla completa y al finalizar y guardar sí.
 - Bloqueo de pantalla opcional (`Wake Lock`) cuando el navegador lo admite.
 - Etiquetas configurables, con nombre y color.
-- Historial de sesiones, edición de etiqueta/nota, borrado y alta manual.
+- Historial de sesiones, edición de etiqueta/nota, borrado y alta manual. Las duraciones del historial y de las metas (progreso y desglose) se muestran con segundos mediante `humanS()`; las estadísticas, los objetivos de las metas y el diálogo de guardado usan `human()` (horas y minutos).
 - Estadísticas por día, semana (lunes a domingo), mes, trimestre y año, con desglose por etiqueta.
 - Metas diarias, semanales y mensuales, generales o asociadas a una etiqueta; se pueden editar y eliminar. Cada meta tiene un desplegable «Ver registros (N)» (`<details class="goal-details">`, `goalBreakdown()`) con los registros que cuentan en el periodo actual: etiqueta, fecha, tiempo que cuenta (si el registro cruza el inicio del periodo, «cuenta X de Y») y nota. Las metas abiertas se recuerdan en `openGoals` mientras la app está abierta.
 - Exportación e importación de copia de seguridad JSON.
