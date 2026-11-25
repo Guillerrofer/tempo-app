@@ -10,7 +10,7 @@ Tempo (también aparece como “Simple Clock” en la interfaz) es un cronómetr
 
 ### Funcionalidades actuales
 
-- Cronómetro con modos visuales deportivo y retro flip.
+- Reloj retro flip con dos tipos de sesión: cronómetro y temporizador. El temporizador (`timer.target` en ms) cuenta hacia atrás; al llegar a cero suena una alarma (Web Audio + vibración, y notificación si la app está en segundo plano y hay permiso) con un botón «Silenciar alarma» (`#muteBtn`, `timer.muted`) que no lo detiene, y sigue contando tiempo extra. Al guardar, el registro es igual que el del cronómetro y su `duration` es el total (temporizador + extra). No se puede cambiar de tipo con una sesión activa.
 - Inicio, pausa, reanudación, reinicio (descarta la sesión sin guardar, con confirmación) y finalización/guardado de sesiones.
 - Persistencia de la sesión activa entre recargas mediante `localStorage`.
 - La etiqueta no se elige al empezar: se elige en el diálogo de «Finalizar y guardar», con la última etiqueta usada preseleccionada.
@@ -97,7 +97,7 @@ No hay `package.json`, gestor de paquetes, sistema de compilación, suite de tes
 - IndexedDB: base `tempo-local-db`, versión actual `1`.
 - Stores: `records`, `tags`, `goals`; todas usan `id` como clave.
 - La aplicación crea etiquetas predeterminadas si la lista está vacía.
-- `localStorage`: temporizador (`tempo-timer`), modo de reloj (`tempo-mode-v2`), tema (`tempo-light`) y última etiqueta usada al guardar (`tempo-last-tag`).
+- `localStorage`: temporizador (`tempo-timer`), tipo de sesión elegido (`tempo-kind`: `stopwatch`/`countdown`), última duración del temporizador (`tempo-countdown`, ms), tema (`tempo-light`) y última etiqueta usada al guardar (`tempo-last-tag`).
 - No hay cuentas de usuario ni servidor propio. La única API remota es Firestore, y solo con la sincronización activada.
 
 ### Sincronización (`sync.js`)

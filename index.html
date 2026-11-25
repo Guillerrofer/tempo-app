@@ -20,12 +20,16 @@
     <main>
       <section id="timerView" class="view active">
         <div class="section-head"><div><p class="eyebrow">CRONÓMETRO</p><h2>Concéntrate en lo importante.</h2></div></div>
-        <div class="mode-switch">
-          <button class="mode-btn" data-mode="sport">Deportivo</button>
-          <button class="mode-btn selected" data-mode="retro">Retro flip</button>
+        <div class="mode-switch" role="group" aria-label="Tipo de sesión">
+          <button class="mode-btn selected" data-kind="stopwatch">Cronómetro</button>
+          <button class="mode-btn" data-kind="countdown">Temporizador</button>
         </div>
         <div id="timerFace" class="timer-face retro">
-          <div class="timer-ring"><div class="timer-digits" id="timerDigits" aria-live="off">00:00:00</div><div class="timer-caption" id="timerCaption">HORAS · MINUTOS · SEGUNDOS</div><button id="fullscreenBtn" class="fullscreen-btn" aria-label="Abrir temporizador a pantalla completa" title="Pantalla completa">⛶</button></div>
+          <div class="timer-ring"><div class="timer-digits" id="timerDigits" aria-live="off">00:00:00</div><div class="timer-caption" id="timerCaption">HORAS · MINUTOS · SEGUNDOS</div><div id="overtimeBadge" class="overtime-badge" hidden></div><button id="fullscreenBtn" class="fullscreen-btn" aria-label="Abrir temporizador a pantalla completa" title="Pantalla completa">⛶</button></div>
+        </div>
+        <div id="countdownSetup" class="countdown-setup" hidden>
+          <div class="goal-time-fields"><label><span class="muted">Horas</span><input id="cdHours" class="control" type="number" min="0" max="23" step="1" value="0" inputmode="numeric"></label><label><span class="muted">Minutos</span><input id="cdMinutes" class="control" type="number" min="0" max="59" step="1" value="25" inputmode="numeric"></label></div>
+          <div class="preset-row"><button type="button" class="small-btn" data-preset="15">15 min</button><button type="button" class="small-btn" data-preset="25">25 min</button><button type="button" class="small-btn" data-preset="45">45 min</button><button type="button" class="small-btn" data-preset="60">1 h</button><button type="button" class="small-btn" data-preset="90">1 h 30</button></div>
         </div>
         <div class="timer-actions">
           <button id="startBtn" class="primary-btn">Iniciar</button>
@@ -33,9 +37,10 @@
           <button id="resetBtn" class="secondary-btn" disabled>Reiniciar</button>
           <button id="saveBtn" class="secondary-btn" disabled>Finalizar y guardar</button>
         </div>
+        <button id="muteBtn" class="alarm-btn" type="button" hidden>🔕 Silenciar alarma</button>
         <button id="fsToggleBtn" class="fs-toggle" type="button">Iniciar</button>
         <div class="timer-state" id="timerState">LISTO PARA EMPEZAR</div>
-        <p class="microcopy">El tiempo se conserva aunque cierres la aplicación o bloquees el móvil.</p>
+        <p class="microcopy">El tiempo se conserva aunque cierres la aplicación o bloquees el móvil. Con el temporizador, al llegar a cero suena una alarma y se sigue contando tiempo extra hasta que finalices; se guarda el total.</p>
       </section>
 
       <section id="recordsView" class="view">

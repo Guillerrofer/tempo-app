@@ -3,7 +3,7 @@
 Primera versión funcional de una aplicación web instalable para Android.
 
 ## Qué incluye
-- Cronómetro con modo deportivo y modo retro flip (por defecto).
+- Cronómetro y temporizador con reloj retro flip. El temporizador suena al llegar a cero (se puede silenciar sin pararlo) y sigue contando tiempo extra; se guarda el total.
 - La etiqueta se elige al finalizar y guardar (se recuerda la última usada).
 - Pantalla completa (cuadrado pequeño en la esquina superior derecha del reloj) con controles accesibles; la pantalla no se apaga mientras está abierta (si el navegador lo permite).
 - Reanudación de sesión tras cerrar o bloquear el móvil.

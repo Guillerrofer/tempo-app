@@ -4,7 +4,9 @@ const pad=n=>String(n).padStart(2,'0');
 const fmt=ms=>{let sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return `${pad(h)}:${pad(m)}:${pad(s)}`};
 const human=ms=>{let m=Math.floor(ms/60000),h=Math.floor(m/60);return h?`${h} h ${pad(m%60)} min`:`${m} min`};
 const dayKey=d=>{const x=new Date(d);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`};
-let tags=[],records=[],goals=[],period='day',timer={running:false,startedAt:null,elapsed:0,paused:false,segments:[]},tick=null,pendingRecord=null,wakeLock=null;
+/* target: duración del temporizador en ms (null = cronómetro). muted: alarma silenciada. notified: ya se avisó al llegar a cero. */
+const freshTimer=()=>({running:false,startedAt:null,elapsed:0,paused:false,segments:[],target:null,muted:false,notified:false});
+let tags=[],records=[],goals=[],period='day',timer=freshTimer(),tick=null,pendingRecord=null,wakeLock=null;
 const DEFAULT_TAGS=[['Trabajo','#438be5'],['Estudio','#a47bea'],['Deporte','#38b77c'],['Ocio','#e6a344'],['Lectura','#d56d9b'],['Otros','#89929d']];
 /* Acceso a datos. Cada cambio local guarda updatedAt y _dirty (pendiente de subir). Los borrados son marcas {id, deleted} para que se sincronicen; load() las oculta. */
 async function load(name){return (await DB.all(name)).filter(x=>!x.deleted)}
@@ -18,8 +20,12 @@ async function init(){
 function requestPersistentStorage(){if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});}
 function bind(){
  $$('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.view));
- $$('.mode-btn').forEach(b=>b.onclick=()=>{ $$('.mode-btn').forEach(x=>x.classList.toggle('selected',x===b));$('#timerFace').className=`timer-face ${b.dataset.mode}`;localStorage.setItem('tempo-mode-v2',b.dataset.mode);$('#timerDigits').dataset.value='';updateTimerUI()});
- const savedMode=localStorage.getItem('tempo-mode-v2')||'retro';$(`.mode-btn[data-mode="${savedMode}"]`).click();
+ $$('.mode-btn').forEach(b=>b.onclick=()=>{if(timer.running)return;localStorage.setItem('tempo-kind',b.dataset.kind);updateTimerUI()});
+ loadCountdownInputs();updateTimerUI();
+ $('#cdHours').oninput=$('#cdMinutes').oninput=()=>{localStorage.setItem('tempo-countdown',countdownMs());updateTimerUI()};
+ $$('[data-preset]').forEach(b=>b.onclick=()=>{const m=Number(b.dataset.preset);$('#cdHours').value=Math.floor(m/60);$('#cdMinutes').value=m%60;localStorage.setItem('tempo-countdown',countdownMs());updateTimerUI()});
+ $('#muteBtn').onclick=muteAlarm;
+ document.addEventListener('pointerdown',unlockAudio);
  $('#startBtn').onclick=startTimer;$('#pauseBtn').onclick=pauseTimer;$('#resetBtn').onclick=resetTimer;$('#saveBtn').onclick=openSaveDialog;$('#fsToggleBtn').onclick=toggleRun;
  $('#fullscreenBtn').onclick=toggleFullscreen;
  document.addEventListener('fullscreenchange',syncFullscreenButton);
@@ -38,14 +44,35 @@ function showView(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===
 function loadTimer(){try{timer={...timer,...JSON.parse(localStorage.getItem('tempo-timer')||'{}')}}catch{};if(timer.running&&!timer.paused)startTicker();updateTimerUI()}
 function persistTimer(){localStorage.setItem('tempo-timer',JSON.stringify(timer))}
 function currentElapsed(){return timer.elapsed+(timer.running&&!timer.paused?Date.now()-timer.startedAt:0)}
-function startTimer(){if(!timer.running){timer.running=true;timer.paused=false;timer.elapsed=0;timer.segments=[];timer.startedAt=Date.now()}else if(timer.paused){timer.paused=false;timer.startedAt=Date.now()}persistTimer();startTicker();if(isFullscreen())requestWakeLock();updateTimerUI()}
+function startTimer(){unlockAudio();if(!timer.running){const target=selectedKind()==='countdown'?countdownMs():null;if(target!==null&&target<=0){alert('Indica una duración para el temporizador.');return}timer={...freshTimer(),running:true,target,startedAt:Date.now()};if(target&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}else if(timer.paused){timer.paused=false;timer.startedAt=Date.now()}persistTimer();startTicker();if(isFullscreen())requestWakeLock();updateTimerUI()}
 function pauseTimer(){if(!timer.running)return;if(!timer.paused){const now=Date.now();timer.elapsed=currentElapsed();timer.segments=[...(timer.segments||[]),[timer.startedAt,now]];timer.paused=true;timer.startedAt=null}else{timer.paused=false;timer.startedAt=Date.now();if(isFullscreen())requestWakeLock()}persistTimer();updateTimerUI()}
 /* Descarta la sesión actual sin guardarla (no toca registros guardados). No sale de pantalla completa. */
-function resetTimer(){if(!timer.running)return;if(!confirm('¿Reiniciar el cronómetro? Se descartará el tiempo de esta sesión sin guardarlo.'))return;timer={running:false,startedAt:null,elapsed:0,paused:false,segments:[]};persistTimer();clearInterval(tick);updateTimerUI()}
+function resetTimer(){if(!timer.running)return;if(!confirm('¿Reiniciar? Se descartará el tiempo de esta sesión sin guardarlo.'))return;timer=freshTimer();persistTimer();clearInterval(tick);updateTimerUI()}
 /* Botón único de pantalla completa: inicia, pausa o reanuda. */
 function toggleRun(){if(timer.running&&!timer.paused)pauseTimer();else startTimer()}
 function startTicker(){clearInterval(tick);tick=setInterval(updateTimerUI,200)}
-function updateTimerUI(){const ms=currentElapsed(),text=fmt(ms);if($('#timerFace').classList.contains('retro'))renderFlip(ms);else $('#timerDigits').textContent=text;$('#timerState').textContent=!timer.running?'LISTO PARA EMPEZAR':timer.paused?'EN PAUSA':'CRONÓMETRO EN MARCHA';$('#startBtn').textContent=timer.running?(timer.paused?'Reanudar':'En marcha'):'Iniciar';$('#startBtn').disabled=timer.running&&!timer.paused;$('#pauseBtn').disabled=!timer.running||timer.paused;$('#resetBtn').disabled=!timer.running;$('#saveBtn').disabled=!timer.running||ms<1000;$('#fsToggleBtn').textContent=!timer.running?'▶ Iniciar':timer.paused?'▶ Reanudar':'❚❚ Pausar'}
+/* Tipo de sesión: la de la sesión activa o, sin sesión, la última elegida. */
+function selectedKind(){return timer.running?(timer.target?'countdown':'stopwatch'):(localStorage.getItem('tempo-kind')==='countdown'?'countdown':'stopwatch')}
+function countdownMs(){const h=Math.max(0,Math.floor(Number($('#cdHours').value)||0)),m=Math.max(0,Math.floor(Number($('#cdMinutes').value)||0));return (h*60+m)*60000}
+function loadCountdownInputs(){const ms=Number(localStorage.getItem('tempo-countdown'))||25*60000;$('#cdHours').value=Math.floor(ms/3600000);$('#cdMinutes').value=Math.floor(ms%3600000/60000)}
+/* Alarma: pitidos con Web Audio y vibración cada 1,5 s hasta silenciarla, pausar o finalizar. El temporizador sigue contando tiempo extra. */
+let audioCtx=null,alarmTimer=null;
+function unlockAudio(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{})}catch{}}
+function beep(){if(!audioCtx)return;const t=audioCtx.currentTime;[0,.22,.44].forEach(d=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.0001,t+d);g.gain.exponentialRampToValueAtTime(.4,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+.18);o.connect(g).connect(audioCtx.destination);o.start(t+d);o.stop(t+d+.2)})}
+function startAlarm(){if(alarmTimer)return;unlockAudio();const ring=()=>{beep();navigator.vibrate?.([200,100,200,100,200])};ring();alarmTimer=setInterval(ring,1500)}
+function stopAlarm(){if(!alarmTimer)return;clearInterval(alarmTimer);alarmTimer=null;navigator.vibrate?.(0)}
+function muteAlarm(){timer.muted=true;persistTimer();stopAlarm();updateTimerUI()}
+async function notifyTimeUp(){if(!document.hidden||!('Notification'in window)||Notification.permission!=='granted')return;const opts={body:'Tiempo cumplido. Sigue contando tiempo extra.',icon:'icons/icon-192.png',tag:'tempo-timer',vibrate:[200,100,200]};try{const reg=await navigator.serviceWorker?.getRegistration();if(reg)await reg.showNotification('Temporizador',opts);else new Notification('Temporizador',opts)}catch{}}
+function updateTimerUI(){const ms=currentElapsed(),kind=selectedKind(),target=timer.running?timer.target:(kind==='countdown'?countdownMs():null),over=!!target&&timer.running&&ms>=target;
+ renderFlip(!target?ms:over?ms-target:target-ms+999);
+ $$('.mode-btn').forEach(b=>{b.classList.toggle('selected',b.dataset.kind===kind);b.disabled=timer.running&&b.dataset.kind!==kind});
+ $('#countdownSetup').hidden=timer.running||kind!=='countdown';
+ $('#timerFace').classList.toggle('overtime',over);
+ $('#overtimeBadge').hidden=!over;if(over)$('#overtimeBadge').textContent=`+ TIEMPO EXTRA · TOTAL ${fmt(ms)}`;
+ if(over&&!timer.notified){timer.notified=true;persistTimer();notifyTimeUp()}
+ if(over&&!timer.paused&&!timer.muted)startAlarm();else stopAlarm();
+ $('#muteBtn').hidden=!over||timer.muted||timer.paused;
+ $('#timerState').textContent=!timer.running?'LISTO PARA EMPEZAR':timer.paused?'EN PAUSA':over?'TIEMPO CUMPLIDO · CONTANDO TIEMPO EXTRA':target?'TEMPORIZADOR EN MARCHA':'CRONÓMETRO EN MARCHA';$('#startBtn').textContent=timer.running?(timer.paused?'Reanudar':'En marcha'):'Iniciar';$('#startBtn').disabled=timer.running&&!timer.paused;$('#pauseBtn').disabled=!timer.running||timer.paused;$('#resetBtn').disabled=!timer.running;$('#saveBtn').disabled=!timer.running||ms<1000;$('#fsToggleBtn').textContent=!timer.running?'▶ Iniciar':timer.paused?'▶ Reanudar':'❚❚ Pausar'}
 /* Reloj flip: tarjeta de horas + tarjeta de minutos, con los segundos pequeños en la esquina. Solo se reconstruye una tarjeta cuando cambia su valor. */
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function renderFlip(ms){const host=$('#timerDigits');let clock=host.querySelector('.flip-clock');if(!clock){host.innerHTML='<div class="flip-clock"><div class="flip-card" data-unit="h"><span class="flip-label">H</span></div><div class="flip-card" data-unit="m"><span class="flip-seconds"></span></div></div>';clock=host.querySelector('.flip-clock')}const sec=Math.max(0,Math.floor(ms/1000));setFlipCard(clock.querySelector('[data-unit="h"]'),String(Math.floor(sec/3600)));setFlipCard(clock.querySelector('[data-unit="m"]'),pad(Math.floor(sec%3600/60)));const s=pad(sec%60),secEl=clock.querySelector('.flip-seconds');if(secEl.textContent!==s)secEl.textContent=s}
@@ -59,8 +86,8 @@ async function releaseWakeLock(){if(wakeLock){await wakeLock.release().catch(()=
 function activeSegments(){const now=Date.now(),segs=(timer.segments||[]).map(s=>[...s]);if(timer.running&&!timer.paused&&timer.startedAt)segs.push([timer.startedAt,now]);const known=segs.reduce((s,[a,b])=>s+(b-a),0),missing=currentElapsed()-known;if(missing>0){const first=segs.length?segs[0][0]:now;segs.unshift([first-missing,first])}return segs}
 /* Milisegundos de un registro dentro de [a, b]. Usa los tramos activos si existen; si no, el intervalo completo. */
 function overlap(r,a,b){return (r.segments||[[r.startAt,r.endAt]]).reduce((s,[x,y])=>s+Math.max(0,Math.min(y,b)-Math.max(x,a)),0)}
-function openSaveDialog(){const segments=activeSegments();pendingRecord={segments,duration:segments.reduce((s,[a,b])=>s+(b-a),0)};fillSelect($('#saveTag'));const lastTag=localStorage.getItem('tempo-last-tag');if(tags.some(t=>t.id===lastTag))$('#saveTag').value=lastTag;$('#saveNote').value='';$('#saveDuration').textContent=`Duración: ${human(pendingRecord.duration)}`;$('#recordDialog').showModal()}
-async function saveTimerRecord(e){e.preventDefault();if(!pendingRecord)return;const {segments,duration}=pendingRecord;localStorage.setItem('tempo-last-tag',$('#saveTag').value);await save('records',{id:uid(),tagId:$('#saveTag').value,startAt:segments[0][0],endAt:segments[segments.length-1][1],duration,segments,note:$('#saveNote').value.trim()});records=await load('records');timer={running:false,startedAt:null,elapsed:0,paused:false,segments:[]};persistTimer();clearInterval(tick);pendingRecord=null;$('#recordDialog').close();if(isFullscreen()){if(document.fullscreenElement)await document.exitFullscreen().catch(()=>{});document.body.classList.remove('timer-fullscreen');await releaseWakeLock()}updateTimerUI();renderAll()}
+function openSaveDialog(){const segments=activeSegments();pendingRecord={segments,duration:segments.reduce((s,[a,b])=>s+(b-a),0)};fillSelect($('#saveTag'));const lastTag=localStorage.getItem('tempo-last-tag');if(tags.some(t=>t.id===lastTag))$('#saveTag').value=lastTag;$('#saveNote').value='';const d=pendingRecord.duration,extra=timer.target&&d>timer.target?d-timer.target:0;$('#saveDuration').textContent=`Duración: ${human(d)}`+(extra?` (temporizador ${human(timer.target)} + extra ${human(extra)})`:'');$('#recordDialog').showModal()}
+async function saveTimerRecord(e){e.preventDefault();if(!pendingRecord)return;const {segments,duration}=pendingRecord;localStorage.setItem('tempo-last-tag',$('#saveTag').value);await save('records',{id:uid(),tagId:$('#saveTag').value,startAt:segments[0][0],endAt:segments[segments.length-1][1],duration,segments,note:$('#saveNote').value.trim()});records=await load('records');timer=freshTimer();persistTimer();clearInterval(tick);pendingRecord=null;$('#recordDialog').close();if(isFullscreen()){if(document.fullscreenElement)await document.exitFullscreen().catch(()=>{});document.body.classList.remove('timer-fullscreen');await releaseWakeLock()}updateTimerUI();renderAll()}
 function fillSelect(el,includeAll=false){const prev=el.value;el.innerHTML=(includeAll?'<option value="">Todas / General</option>':'')+tags.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');if([...el.options].some(o=>o.value===prev))el.value=prev}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tagById(id){return tags.find(t=>t.id===id)||{name:'Sin etiqueta',color:'#89929d'}}
