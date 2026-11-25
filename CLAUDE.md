@@ -16,6 +16,8 @@ Tempo (también aparece como “Simple Clock” en la interfaz) es un cronómetr
 - La etiqueta no se elige al empezar: se elige en el diálogo de «Finalizar y guardar», con la última etiqueta usada preseleccionada.
 - Modo de pantalla completa (icono pequeño ⛶, solo esquinas, en la esquina superior derecha del reloj) con controles del cronómetro accesibles; al pausar no sale de pantalla completa y al finalizar y guardar sí.
 - Bloqueo de pantalla opcional (`Wake Lock`) cuando el navegador lo admite.
+- Avisos en segundo plano (Ajustes → «Avisos en segundo plano», activados por defecto, cada 5/10/20/30 min; localStorage['tempo-notify'] = {enabled, minutes}): al ocultarse la app con una sesión en marcha (no en pausa) se muestra «¿Sigues ahí?» y luego un recordatorio cada N minutos (onAppHidden, ackgroundCheck cada 15 s, gNextAt). Todas usan el tag 	empo-session y se cierran al volver (stopBackgroundNotices). Tienen las acciones «Pausar» y «Volver a Tempo»: service-worker.js (
+otificationclick) envía {type:'pause-timer', at} a la app o, si está cerrada, abre ./?action=pause&at=…; pauseAt(at) pausa con la hora en que se pulsó. Los programa la página, no un servidor: si Android congela la app en segundo plano, se retrasan.
 - Etiquetas configurables, con nombre y color.
 - Historial de sesiones, edición de etiqueta/nota, borrado y alta manual. Las duraciones del historial y de las metas (progreso y desglose) se muestran con segundos mediante `humanS()`; las estadísticas, los objetivos de las metas y el diálogo de guardado usan `human()` (horas y minutos).
 - Estadísticas por día, semana (lunes a domingo), mes, trimestre y año, con desglose por etiqueta.
@@ -97,7 +99,7 @@ No hay `package.json`, gestor de paquetes, sistema de compilación, suite de tes
 - IndexedDB: base `tempo-local-db`, versión actual `1`.
 - Stores: `records`, `tags`, `goals`; todas usan `id` como clave.
 - La aplicación crea etiquetas predeterminadas si la lista está vacía.
-- `localStorage`: temporizador (`tempo-timer`), tipo de sesión elegido (`tempo-kind`: `stopwatch`/`countdown`), última duración del temporizador (`tempo-countdown`, ms), tema (`tempo-light`) y última etiqueta usada al guardar (`tempo-last-tag`).
+- `localStorage`: temporizador (`tempo-timer`), tipo de sesión elegido (`tempo-kind`: `stopwatch`/`countdown`), última duración del temporizador (`tempo-countdown`, ms), avisos en segundo plano (`tempo-notify`), tema (`tempo-light`) y última etiqueta usada al guardar (`tempo-last-tag`).
 - No hay cuentas de usuario ni servidor propio. La única API remota es Firestore, y solo con la sincronización activada.
 
 ### Sincronización (`sync.js`)

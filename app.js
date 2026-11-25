@@ -31,7 +31,8 @@ function bind(){
  $('#startBtn').onclick=startTimer;$('#pauseBtn').onclick=pauseTimer;$('#resetBtn').onclick=resetTimer;$('#saveBtn').onclick=openSaveDialog;$('#fsToggleBtn').onclick=toggleRun;
  $('#fullscreenBtn').onclick=toggleFullscreen;
  document.addEventListener('fullscreenchange',syncFullscreenButton);
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&isFullscreen())requestWakeLock()});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){stopBackgroundNotices();if(isFullscreen())requestWakeLock()}else onAppHidden()});
+ setupNotifySettings();
  $('#confirmSave').onclick=saveTimerRecord;$('#addManualBtn').onclick=openManualDialog;$('#confirmManual').onclick=saveManual;
  $('#addGoalBtn').onclick=()=>openGoalDialog();
  $('#closeGoalDialog').onclick=()=>$('#goalDialog').close();$('#cancelGoal').onclick=()=>$('#goalDialog').close();
@@ -46,8 +47,31 @@ function showView(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===
 function loadTimer(){try{timer={...timer,...JSON.parse(localStorage.getItem('tempo-timer')||'{}')}}catch{};if(timer.running&&!timer.paused)startTicker();updateTimerUI()}
 function persistTimer(){localStorage.setItem('tempo-timer',JSON.stringify(timer))}
 function currentElapsed(){return timer.elapsed+(timer.running&&!timer.paused?Date.now()-timer.startedAt:0)}
-function startTimer(){unlockAudio();if(!timer.running){const target=selectedKind()==='countdown'?countdownMs():null;if(target!==null&&target<=0){alert('Indica una duración para el temporizador.');return}timer={...freshTimer(),running:true,target,startedAt:Date.now()};if(target&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}else if(timer.paused){timer.paused=false;timer.startedAt=Date.now()}persistTimer();startTicker();if(isFullscreen())requestWakeLock();updateTimerUI()}
+function startTimer(){unlockAudio();if(!timer.running){const target=selectedKind()==='countdown'?countdownMs():null;if(target!==null&&target<=0){alert('Indica una duración para el temporizador.');return}timer={...freshTimer(),running:true,target,startedAt:Date.now()};if((target||notifySettings().enabled)&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission().then(renderNotifySettings).catch(()=>{})}else if(timer.paused){timer.paused=false;timer.startedAt=Date.now()}persistTimer();startTicker();if(isFullscreen())requestWakeLock();updateTimerUI()}
 function pauseTimer(){if(!timer.running)return;if(!timer.paused){const now=Date.now();timer.elapsed=currentElapsed();timer.segments=[...(timer.segments||[]),[timer.startedAt,now]];timer.paused=true;timer.startedAt=null}else{timer.paused=false;timer.startedAt=Date.now();if(isFullscreen())requestWakeLock()}persistTimer();updateTimerUI()}
+/* Pausa en un instante dado (botón «Pausar» de una notificación): el mensaje puede llegar tarde si la página estaba congelada, así que se usa la hora en que se pulsó. */
+function pauseAt(at){if(!timer.running||timer.paused)return;const now=Math.min(Date.now(),Math.max(timer.startedAt,Number(at)||Date.now()));timer.elapsed+=now-timer.startedAt;timer.segments=[...(timer.segments||[]),[timer.startedAt,now]];timer.paused=true;timer.startedAt=null;persistTimer();updateTimerUI()}
+/* Avisos en segundo plano: al salir de la app con una sesión en marcha se avisa «¿Sigues ahí?» y después cada N minutos mientras siga fuera.
+   Los programa la propia página: si el sistema la congela en segundo plano, los avisos se retrasan hasta que vuelva a ejecutarse. */
+const NOTIFY_TAG='tempo-session',NOTIFY_OPTIONS=[5,10,20,30];
+let bgTimer=null,bgNextAt=0;
+function notifySettings(){try{const s=JSON.parse(localStorage.getItem('tempo-notify')||'{}');return {enabled:s.enabled!==false,minutes:NOTIFY_OPTIONS.includes(s.minutes)?s.minutes:10}}catch{return {enabled:true,minutes:10}}}
+function saveNotifySettings(s){localStorage.setItem('tempo-notify',JSON.stringify(s))}
+const canNotify=()=>'Notification'in window&&Notification.permission==='granted';
+function sessionSummary(){const ms=currentElapsed();if(!timer.target)return `Cronómetro en marcha · ${fmt(ms)}`;return ms<timer.target?`Temporizador en marcha · quedan ${fmt(timer.target-ms+999)}`:`Temporizador cumplido · tiempo extra ${fmt(ms-timer.target)} · total ${fmt(ms)}`}
+async function showSessionNotification(title,body,withActions=true){if(!canNotify())return;const opts={body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:NOTIFY_TAG,renotify:true,vibrate:[150,80,150]};if(withActions)opts.actions=[{action:'pause',title:'Pausar'},{action:'open',title:'Volver a Tempo'}];try{const reg=await navigator.serviceWorker?.getRegistration();if(reg)await reg.showNotification(title,opts);else{delete opts.actions;new Notification(title,opts)}}catch{}}
+function onAppHidden(){const s=notifySettings();if(!s.enabled||!timer.running||timer.paused||!canNotify())return;showSessionNotification('¿Sigues ahí?',sessionSummary()+'. Toca para volver.');bgNextAt=Date.now()+s.minutes*60000;clearInterval(bgTimer);bgTimer=setInterval(backgroundCheck,15000)}
+function backgroundCheck(){const s=notifySettings();if(!document.hidden||!timer.running||timer.paused||!s.enabled){clearInterval(bgTimer);bgTimer=null;return}if(Date.now()>=bgNextAt){showSessionNotification(timer.target?'El temporizador sigue activo':'El cronómetro sigue activo',sessionSummary());bgNextAt=Date.now()+s.minutes*60000}}
+async function stopBackgroundNotices(){clearInterval(bgTimer);bgTimer=null;try{const reg=await navigator.serviceWorker?.getRegistration();(await reg?.getNotifications({tag:NOTIFY_TAG}))?.forEach(n=>n.close())}catch{}}
+function setupNotifySettings(){const s=notifySettings();$('#notifyInterval').innerHTML=NOTIFY_OPTIONS.map(m=>`<option value="${m}">${m} min</option>`).join('');
+ $('#notifyEnabled').onchange=async()=>{const on=$('#notifyEnabled').checked;saveNotifySettings({...notifySettings(),enabled:on});if(on&&'Notification'in window&&Notification.permission==='default')await Notification.requestPermission().catch(()=>{});renderNotifySettings()};
+ $('#notifyInterval').onchange=()=>{const minutes=Number($('#notifyInterval').value);saveNotifySettings({...notifySettings(),minutes});if(bgTimer)bgNextAt=Math.min(bgNextAt,Date.now()+minutes*60000)};
+ $('#notifyTest').onclick=async()=>{if('Notification'in window&&Notification.permission==='default')await Notification.requestPermission().catch(()=>{});renderNotifySettings();if(canNotify())showSessionNotification('Prueba de aviso','Así te avisará Tempo cuando salgas con una sesión en marcha.',false)};
+ /* «Pausar» desde una notificación: llega como mensaje del service worker o, si la app estaba cerrada, como ?action=pause&at=… */
+ navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='pause-timer')pauseAt(e.data.at)});
+ const q=new URLSearchParams(location.search);if(q.get('action')==='pause'){pauseAt(q.get('at'));history.replaceState(null,'',location.pathname)}
+ renderNotifySettings()}
+function renderNotifySettings(){const s=notifySettings(),supported='Notification'in window,perm=supported?Notification.permission:'unsupported';$('#notifyEnabled').checked=s.enabled;$('#notifyInterval').value=String(s.minutes);$('#notifyInterval').disabled=!s.enabled;$('#notifyTest').disabled=!supported||perm==='denied';$('#notifyStatus').textContent=!supported?'Este navegador no admite notificaciones.':perm==='denied'?'Las notificaciones están bloqueadas para Tempo. Actívalas en los ajustes del navegador o del móvil.':perm==='default'?'Tempo te pedirá permiso para enviar notificaciones al activar los avisos o al iniciar una sesión.':s.enabled?'Notificaciones permitidas.':'Avisos desactivados.'}
 /* Descarta la sesión actual sin guardarla (no toca registros guardados). No sale de pantalla completa. */
 function resetTimer(){if(!timer.running)return;if(!confirm('¿Reiniciar? Se descartará el tiempo de esta sesión sin guardarlo.'))return;timer=freshTimer();persistTimer();clearInterval(tick);updateTimerUI()}
 /* Botón único de pantalla completa: inicia, pausa o reanuda. */

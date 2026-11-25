@@ -8,6 +8,7 @@ Primera versión funcional de una aplicación web instalable para Android.
 - Pantalla completa (cuadrado pequeño en la esquina superior derecha del reloj) con controles accesibles; la pantalla no se apaga mientras está abierta (si el navegador lo permite).
 - Reanudación de sesión tras cerrar o bloquear el móvil.
 - Pausar, reanudar, reiniciar (descartar la sesión sin guardarla) y guardar registros. Las pausas no cuentan en las estadísticas ni en las metas.
+- Avisos al salir de la app con una sesión en marcha («¿Sigues ahí?» y recordatorios cada 5, 10, 20 o 30 min, con botón para pausar). Se activan o desactivan en Ajustes.
 - Etiquetas personalizables.
 - Historial y alta manual de registros.
 - Estadísticas por día, semana (lunes a domingo), mes, trimestre y año.

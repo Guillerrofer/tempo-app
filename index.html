@@ -74,6 +74,15 @@
           <div id="tagsList" class="stack"></div>
           <div class="inline-form"><input id="newTagName" class="control" placeholder="Nueva etiqueta"><input id="newTagColor" type="color" value="#8b7cf6"><button id="addTagBtn" class="small-btn">Añadir</button></div>
         </div>
+        <div class="panel stack" id="notifyPanel">
+          <h3>Avisos en segundo plano</h3>
+          <p class="muted">Si sales de la app con el cronómetro o el temporizador en marcha, te pregunta si sigues ahí y después te recuerda que sigue activo mientras no vuelvas. Desde el aviso puedes pausarlo.</p>
+          <label class="switch-row" for="notifyEnabled"><span>Activar avisos</span><input id="notifyEnabled" type="checkbox" role="switch"></label>
+          <div><label class="field-label" for="notifyInterval">Recordar cada</label><select id="notifyInterval" class="control"></select></div>
+          <p id="notifyStatus" class="muted" aria-live="polite"></p>
+          <p class="muted">En el móvil, el sistema puede retrasar los avisos si la app lleva mucho tiempo en segundo plano.</p>
+          <div class="button-row"><button id="notifyTest" class="secondary-btn" type="button">Probar aviso</button></div>
+        </div>
         <div class="panel stack" id="syncPanel">
           <h3>Sincronización entre dispositivos</h3>
           <div id="syncOff" class="stack">
