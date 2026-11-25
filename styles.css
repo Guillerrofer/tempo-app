@@ -68,3 +68,14 @@ body.timer-fullscreen #timerView>.fs-toggle:hover,body.timer-fullscreen #timerVi
 body.timer-fullscreen .overtime-badge{font-size:clamp(11px,2vw,20px)}
 body.timer-fullscreen:has(#muteBtn:not([hidden])){--fs-bottom:calc(env(safe-area-inset-bottom) + 128px)}
 body.timer-fullscreen #timerView>#muteBtn:not([hidden]){display:block;position:fixed;z-index:15;left:50%;bottom:calc(env(safe-area-inset-bottom) + 70px);transform:translateX(-50%);width:auto;min-width:220px;height:48px;margin:0;padding:0 24px;border-radius:24px}
+/* ===== Metas: desglose de registros ===== */
+.goal-details{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.goal-details>summary{cursor:pointer;list-style:none;color:var(--muted);font:700 12px Manrope;display:flex;align-items:center;gap:6px}
+.goal-details>summary::-webkit-details-marker{display:none}
+.goal-details>summary::before{content:'▸';transition:transform .2s}.goal-details[open]>summary::before{transform:rotate(90deg)}
+.goal-details>summary:hover,.goal-details>summary:focus-visible{color:var(--text)}
+.goal-records{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.goal-records li{background:var(--surface2);border-radius:10px;padding:10px 12px}
+.goal-rec-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}
+.goal-rec-note{margin-top:4px;font-size:12px;color:var(--text);opacity:.85;overflow-wrap:anywhere}
+.goal-records-empty{margin-top:8px}

@@ -19,7 +19,7 @@ Tempo (también aparece como “Simple Clock” en la interfaz) es un cronómetr
 - Etiquetas configurables, con nombre y color.
 - Historial de sesiones, edición de etiqueta/nota, borrado y alta manual.
 - Estadísticas por día, semana (lunes a domingo), mes, trimestre y año, con desglose por etiqueta.
-- Metas diarias, semanales y mensuales, generales o asociadas a una etiqueta; se pueden editar y eliminar.
+- Metas diarias, semanales y mensuales, generales o asociadas a una etiqueta; se pueden editar y eliminar. Cada meta tiene un desplegable «Ver registros (N)» (`<details class="goal-details">`, `goalBreakdown()`) con los registros que cuentan en el periodo actual: etiqueta, fecha, tiempo que cuenta (si el registro cruza el inicio del periodo, «cuenta X de Y») y nota. Las metas abiertas se recuerdan en `openGoals` mientras la app está abierta.
 - Exportación e importación de copia de seguridad JSON.
 - Sincronización opcional entre dispositivos con una frase compartida (cifrado de extremo a extremo, Firebase Firestore).
 - Tema claro/oscuro.

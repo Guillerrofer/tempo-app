@@ -11,7 +11,7 @@ Primera versión funcional de una aplicación web instalable para Android.
 - Etiquetas personalizables.
 - Historial y alta manual de registros.
 - Estadísticas por día, semana (lunes a domingo), mes, trimestre y año.
-- Objetivos diarios, semanales y mensuales, generales o por etiqueta.
+- Objetivos diarios, semanales y mensuales, generales o por etiqueta, con un desplegable que muestra los registros que suman a cada meta (fecha, etiqueta, duración y nota).
 - Exportación e importación de copias JSON. La importación comprueba el archivo antes y, si falla, no modifica tus datos.
 - Almacenamiento local mediante IndexedDB.
 - Sincronización opcional entre dispositivos con una frase o código (Ajustes → Sincronización). Los datos se cifran en el dispositivo antes de subirse a Firebase.
